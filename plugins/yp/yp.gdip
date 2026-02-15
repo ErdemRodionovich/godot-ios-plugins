@@ -1,17 +1,19 @@
 [config]
 name="YP"
-binary="yp.xcframework"
+binary="yp.debug.xcframework"
 
 initialization="godot_yp_init"
 deinitialization="godot_yp_deinit"
 
 [dependencies]
-linked=[]
+linked=["YandexMobileAds.xcframework"]
 embedded=[]
-system=[]
+system=["UIKit.framework"]
 
 capabilities=[]
 
 files=[]
+linker_flags=["-ObjC"]
 
 [plist]
+NSUserTrackingUsageDescription="This identifier will be used to deliver personalized ads to you."

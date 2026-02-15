@@ -162,6 +162,14 @@ else:
         'godot/platform/ios',
     ])
 
+if env['plugin'] == 'yp':
+    env.Append(FRAMEWORKPATH=[
+        './plugins/yp/YandexMobileAds.xcframework/ios-arm64',
+    ])
+    env.Append(LINKFLAGS=[
+        '-framework', 'YandexMobileAds',
+    ])
+
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 sources = Glob('plugins/' + env['plugin'] + '/*.cpp')
 sources.append(Glob('plugins/' + env['plugin'] + '/*.mm'))

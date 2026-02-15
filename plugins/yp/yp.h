@@ -28,6 +28,13 @@ public:
 
 	static YP *get_singleton();
 
+	void initialize();
+    
+	void load_rewarded(const String &ad_unit_id);
+    void show_rewarded();
+
+	void load_interstitial(const String &ad_unit_id);
+    void show_interstitial();
 
 	YP();
 	~YP();
