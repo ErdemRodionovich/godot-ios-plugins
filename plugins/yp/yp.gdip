@@ -1,0 +1,17 @@
+[config]
+name="YP"
+binary="yp.xcframework"
+
+initialization="godot_yp_init"
+deinitialization="godot_yp_deinit"
+
+[dependencies]
+linked=[]
+embedded=[]
+system=[]
+
+capabilities=[]
+
+files=[]
+
+[plist]
