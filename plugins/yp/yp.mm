@@ -19,46 +19,40 @@
 #import "platform/iphone/view_controller.h"
 #endif
 
-#import <YandexMobileAds/YandexMobileAds.h>
-
 YP *instance = NULL;
-
-// @interface GodotYP : NSObject <UIApplicationDelegate>
-// @end
-// @implementation GodotYP
-// @end
+id yb_instance;
 
 // Internal Objective-C class to handle Yandex callbacks
-@interface GodotYP : NSObject <YMAInterstitialAdLoaderDelegate, YMAInterstitialAdDelegate>
-@property (nonatomic, strong) YMAInterstitialAdLoader *interstitialAdLoader;
-@property (nonatomic, strong) YMAInterstitialAd *interstitialAd;
-@end
+// @interface GodotYP : NSObject <YMAInterstitialAdLoaderDelegate, YMAInterstitialAdDelegate>
+// @property (nonatomic, strong) YMAInterstitialAdLoader *interstitialAdLoader;
+// @property (nonatomic, strong) YMAInterstitialAd *interstitialAd;
+// @end
 
-@implementation GodotYP
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _interstitialAdLoader = [[YMAInterstitialAdLoader alloc] init];
-        _interstitialAdLoader.delegate = self;
-    }
-    return self;
-}
+// @implementation GodotYP
+// - (instancetype)init {
+//     self = [super init];
+//     if (self) {
+//         _interstitialAdLoader = [[YMAInterstitialAdLoader alloc] init];
+//         _interstitialAdLoader.delegate = self;
+//     }
+//     return self;
+// }
 
-// Delegate methods
-- (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didLoad:(YMAInterstitialAd *)interstitialAd {
-    self.interstitialAd = interstitialAd;
-    self.interstitialAd.delegate = self;
-	if(instance != NULL){
-    	instance->emit_signal("interstitial_loaded");
-	}
-}
+// // Delegate methods
+// - (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didLoad:(YMAInterstitialAd *)interstitialAd {
+//     self.interstitialAd = interstitialAd;
+//     self.interstitialAd.delegate = self;
+// 	if(instance != NULL){
+//     	instance->emit_signal("interstitial_loaded");
+// 	}
+// }
 
-- (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didFailToLoadWithError:(YMAAdRequestError *)error {
-    if(instance != NULL){
-		instance->emit_signal("interstitial_failed_to_load", String(error.error.localizedDescription.UTF8String));
-	}
-}
-@end
+// - (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didFailToLoadWithError:(YMAAdRequestError *)error {
+//     if(instance != NULL){
+// 		instance->emit_signal("interstitial_failed_to_load", String(error.error.localizedDescription.UTF8String));
+// 	}
+// }
+// @end
 
 YP *YP::get_singleton() {
 	return instance;
@@ -80,13 +74,16 @@ void YP::_bind_methods() {
 
 YP::YP() {
 	instance = this;
-	[YMAMobileAds initializeSDKWithCompletionHandler:nil];
-	godot_yp = [[GodotYP alloc] init];
+	// [YMAMobileAds initializeSDKWithCompletionHandler:nil];
+	// godot_yp = [[GodotYP alloc] init];
+	Class cls = NSClassFromString(@"YBridge");
+	if(cls){
+		yb_instance = [[cls alloc] init];
+	}
 }
 
 YP::~YP() {
 	instance = NULL;
-	godot_yp = nil;
 }
 
 void YP::load_rewarded(const String &ad_unit_id){
@@ -98,15 +95,23 @@ void YP::show_rewarded(){
 }
 
 void YP::load_interstitial(const String &ad_unit_id){
-	NSString *id = [[NSString alloc] initWithUTF8String:ad_unit_id.utf8().get_data()];
-	YMAAdRequestConfiguration *config = [[YMAAdRequestConfiguration alloc] initWithAdUnitID:id];
-	//[config initWithAdUnitID:id];
-	[godot_yp.interstitialAdLoader loadAdWithRequestConfiguration:config];
+	NSString *adId = [[NSString alloc] initWithUTF8String:ad_unit_id.utf8().get_data()];
+	// YMAAdRequestConfiguration *config = [[YMAAdRequestConfiguration alloc] initWithAdUnitID:id];
+	// //[config initWithAdUnitID:id];
+	// [godot_yp.interstitialAdLoader loadAdWithRequestConfiguration:config];
+	SEL selector = NSSelectorFromString(@"loadInterstitial:");
+	if (yb_instance && [yb_instance respondsToSelector:selector]) {
+        [yb_instance performSelector:selector withObject:adId];
+    }
 }
 
 void YP::show_interstitial(){
-	if(godot_yp.interstitialAd){
-		UIViewController *root = [UIApplication sharedApplication].keyWindow.rootViewController;
-		[godot_yp.interstitialAd showFromViewController:root];
-	}
+	// if(godot_yp.interstitialAd){
+	// 	UIViewController *root = [UIApplication sharedApplication].keyWindow.rootViewController;
+	// 	[godot_yp.interstitialAd showFromViewController:root];
+	// }
+	SEL selector = NSSelectorFromString(@"showInterstitial:");
+	if (yb_instance && [yb_instance respondsToSelector:selector]) {
+        [yb_instance performSelector:selector];
+    }
 }

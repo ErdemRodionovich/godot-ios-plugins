@@ -6,9 +6,9 @@ initialization="godot_yp_init"
 deinitialization="godot_yp_deinit"
 
 [dependencies]
-linked=["YandexMobileAds.xcframework"]
+linked=[]
 embedded=[]
-system=["UIKit.framework"]
+system=[]
 
 capabilities=[]
 
@@ -16,4 +16,3 @@ files=[]
 linker_flags=["-ObjC"]
 
 [plist]
-NSUserTrackingUsageDescription="This identifier will be used to deliver personalized ads to you."

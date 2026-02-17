@@ -11,18 +11,10 @@
 #include "core/object.h"
 #endif
 
-#ifdef __OBJC__
-@class GodotYP;
-#else
-typedef void GodotYP;
-#endif
-
 class YP : public Object {
 	GDCLASS(YP, Object);
 
 	static void _bind_methods();
-
-	GodotYP *godot_yp;
 
 public:
 
