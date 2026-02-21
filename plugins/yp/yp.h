@@ -15,12 +15,14 @@ class YP : public Object {
 	GDCLASS(YP, Object);
 
 	static void _bind_methods();
+	bool m_sdkInited = false;
 
 public:
 
 	static YP *get_singleton();
 
 	void initialize();
+	void initSDK_ifNot();
     
 	void load_rewarded(const String &ad_unit_id);
     void show_rewarded();

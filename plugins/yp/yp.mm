@@ -22,6 +22,19 @@
 YP *instance = NULL;
 id yb_instance;
 
+void callYBridge(NSString *methodName, id argument = nil){
+	SEL selector = NSSelectorFromString(methodName);
+	if (yb_instance && [yb_instance respondsToSelector:selector]) {
+		if (argument) {
+			[yb_instance performSelector:selector withObject:argument];
+		} else {
+			[yb_instance performSelector:selector];
+		}
+	} else {
+		NSLog(@"YBridge instance does not respond to %@ selector", methodName);
+	}
+}
+
 @interface GodotYP : NSObject
 @end
 
@@ -91,6 +104,13 @@ id yb_instance;
 	}
 }
 
+- (void)tracking_permission_result:(NSString *)result {
+	NSLog(@"Tracking permission result: %@", result);
+	if(instance){
+		instance->initSDK_ifNot();
+	}
+}
+
 @end
 
 YP *YP::get_singleton() {
@@ -98,13 +118,14 @@ YP *YP::get_singleton() {
 }
 
 void YP::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("initialize"), &YP::initialize);
 	ClassDB::bind_method(D_METHOD("load_rewarded", "adUnitID"), &YP::load_rewarded);
 	ClassDB::bind_method(D_METHOD("show_rewarded"), &YP::show_rewarded);
 	ClassDB::bind_method(D_METHOD("load_interstitial", "adUnitID"), &YP::load_interstitial);
 	ClassDB::bind_method(D_METHOD("show_interstitial"), &YP::show_interstitial);
 
-	ADD_SIGNAL(MethodInfo("init_completed"));
-	ADD_SIGNAL(MethodInfo("init_failed", PropertyInfo(Variant::STRING, "error")));
+	ADD_SIGNAL(MethodInfo("initialization_completed"));
+	ADD_SIGNAL(MethodInfo("initialization_failed", PropertyInfo(Variant::STRING, "error")));
 	ADD_SIGNAL(MethodInfo("rewarded_loaded"));
 	ADD_SIGNAL(MethodInfo("rewarded_failed_to_load", PropertyInfo(Variant::STRING, "error")));
 	ADD_SIGNAL(MethodInfo("rewarded_showed"));
@@ -129,44 +150,41 @@ YP::~YP() {
 	instance = NULL;
 }
 
+void YP::initialize(){
+	NSLog(@"Initializing YP plugin");
+	callYBridge(@"checkAndRequestTrackingPermission");
+}
+
+void YP::initSDK_ifNot(){
+	if (!m_sdkInited) {
+		NSLog(@"Initializing SDK");
+		callYBridge(@"initSDK");
+		m_sdkInited = true;
+	}
+}
+
 void YP::load_rewarded(const String &ad_unit_id){
+	initSDK_ifNot();
 	NSString *adId = [[NSString alloc] initWithUTF8String:ad_unit_id.utf8().get_data()];
 	NSLog(@"Loading rewarded ad with ID: %@", adId);
-	SEL selector = NSSelectorFromString(@"loadRewarded:");
-	if (yb_instance && [yb_instance respondsToSelector:selector]) {
-        [yb_instance performSelector:selector withObject:adId];
-    } else {
-		NSLog(@"YBridge instance does not respond to loadRewarded:");
-	}
+	callYBridge(@"loadRewarded:", adId);
 }
 
 void YP::show_rewarded(){
+	initSDK_ifNot();
 	NSLog(@"Showing rewarded ad");
-	SEL selector = NSSelectorFromString(@"showRewarded:");
-	if (yb_instance && [yb_instance respondsToSelector:selector]) {
-        [yb_instance performSelector:selector withObject:0];
-    } else {
-		NSLog(@"YBridge instance does not respond to showRewarded:");
-	}
+	callYBridge(@"showRewarded");
 }
 
 void YP::load_interstitial(const String &ad_unit_id){
+	initSDK_ifNot();
 	NSString *adId = [[NSString alloc] initWithUTF8String:ad_unit_id.utf8().get_data()];
 	NSLog(@"Loading interstitial ad with ID: %@", adId);
-	SEL selector = NSSelectorFromString(@"loadInterstitial:");
-	if (yb_instance && [yb_instance respondsToSelector:selector]) {
-        [yb_instance performSelector:selector withObject:adId];
-    } else {
-		NSLog(@"YBridge instance does not respond to loadInterstitial:");
-	}
+	callYBridge(@"loadInterstitial:", adId);
 }
 
 void YP::show_interstitial(){
+	initSDK_ifNot();
 	NSLog(@"Showing interstitial ad");
-	SEL selector = NSSelectorFromString(@"showInterstitial:");
-	if (yb_instance && [yb_instance respondsToSelector:selector]) {
-        [yb_instance performSelector:selector];
-    } else {
-		NSLog(@"YBridge instance does not respond to showInterstitial:");
-	}
+	callYBridge(@"showInterstitial");
 }
