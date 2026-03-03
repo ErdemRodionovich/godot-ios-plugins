@@ -22,7 +22,7 @@
 YP *instance = NULL;
 id yb_instance;
 
-void callYBridge(NSString *methodName, id argument = nil){
+void callYBridge(NSString *methodName, id argument = nil) {
 	SEL selector = NSSelectorFromString(methodName);
 	if (yb_instance && [yb_instance respondsToSelector:selector]) {
 		if (argument) {
@@ -111,6 +111,18 @@ void callYBridge(NSString *methodName, id argument = nil){
 	}
 }
 
+- (void)banner_loaded {
+	if(instance){
+		instance->emit_signal("banner_loaded");
+	}
+}
+
+- (void)banner_failed_to_load:(NSString *)error {
+	if(instance){
+		instance->emit_signal("banner_failed_to_load", String(error.UTF8String));
+	}
+}
+
 @end
 
 YP *YP::get_singleton() {
@@ -123,6 +135,8 @@ void YP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("show_rewarded"), &YP::show_rewarded);
 	ClassDB::bind_method(D_METHOD("load_interstitial", "adUnitID"), &YP::load_interstitial);
 	ClassDB::bind_method(D_METHOD("show_interstitial"), &YP::show_interstitial);
+	ClassDB::bind_method(D_METHOD("load_banner", "adUnitID", "width"), &YP::load_banner);
+	ClassDB::bind_method(D_METHOD("show_banner"), &YP::show_banner);
 
 	ADD_SIGNAL(MethodInfo("initialization_completed"));
 	ADD_SIGNAL(MethodInfo("initialization_failed", PropertyInfo(Variant::STRING, "error")));
@@ -134,6 +148,8 @@ void YP::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("interstitial_failed_to_load", PropertyInfo(Variant::STRING, "error")));
 	ADD_SIGNAL(MethodInfo("interstitial_showed"));
 	ADD_SIGNAL(MethodInfo("interstitial_failed_to_show", PropertyInfo(Variant::STRING, "error")));
+	ADD_SIGNAL(MethodInfo("banner_loaded"));
+	ADD_SIGNAL(MethodInfo("banner_failed_to_load", PropertyInfo(Variant::STRING, "error")));
 }
 
 YP::YP() {
@@ -187,4 +203,19 @@ void YP::show_interstitial(){
 	initSDK_ifNot();
 	NSLog(@"Showing interstitial ad");
 	callYBridge(@"showInterstitial");
+}
+
+void YP::load_banner(const String &ad_unit_id, float width){
+	initSDK_ifNot();
+	NSString *adId = [[NSString alloc] initWithUTF8String:ad_unit_id.utf8().get_data()];
+	NSLog(@"Loading banner ad with ID: %@", adId);
+	NSNumber *widthNum = [NSNumber numberWithFloat:width];
+	callYBridge(@"saveBannerWidth:", widthNum);
+	callYBridge(@"loadBanner:", adId);
+}
+
+void YP::show_banner(){
+	initSDK_ifNot();
+	NSLog(@"Showing banner ad");
+	callYBridge(@"showBanner");
 }

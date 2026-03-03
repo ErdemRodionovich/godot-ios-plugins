@@ -30,6 +30,9 @@ public:
 	void load_interstitial(const String &ad_unit_id);
     void show_interstitial();
 
+	void load_banner(const String &ad_unit_id, float width);
+	void show_banner();
+
 	YP();
 	~YP();
 };
