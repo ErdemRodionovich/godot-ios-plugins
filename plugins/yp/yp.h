@@ -23,6 +23,7 @@ public:
 
 	void initialize();
 	void initSDK_ifNot();
+	void initMetrica(const String &api_key);
     
 	void load_rewarded(const String &ad_unit_id);
     void show_rewarded();

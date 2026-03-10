@@ -131,6 +131,7 @@ YP *YP::get_singleton() {
 
 void YP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("initialize"), &YP::initialize);
+	ClassDB::bind_method(D_METHOD("initMetrica"), &YP::initMetrica);
 	ClassDB::bind_method(D_METHOD("load_rewarded", "adUnitID"), &YP::load_rewarded);
 	ClassDB::bind_method(D_METHOD("show_rewarded"), &YP::show_rewarded);
 	ClassDB::bind_method(D_METHOD("load_interstitial", "adUnitID"), &YP::load_interstitial);
@@ -177,6 +178,12 @@ void YP::initSDK_ifNot(){
 		callYBridge(@"initSDK");
 		m_sdkInited = true;
 	}
+}
+
+void YP::initMetrica(const String &api_key){
+	NSLog(@"Initializing AppMetrica");
+	NSString *apiKey = [[NSString alloc] initWithUTF8String:api_key.utf8().get_data()];
+	callYBridge(@"initMetrica:", apiKey);
 }
 
 void YP::load_rewarded(const String &ad_unit_id){
